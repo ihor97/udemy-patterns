@@ -1,60 +1,70 @@
-// якщо в тебе функція яка бере базовий клас то во ця ф-я мусить брати теж клас наслідник його 
-class Recatangle{
-    constructor(width,height){
-        this._width=width
-        this._height=height
-    }
-
-    get area(){
-        return this._width*this._height
-    }
-    toString(){
-        return `${this._height}*${this._width}`
-    }
-    // можна добавити перевірку
-
-get isSquare(){
-    return this._height===this._width
-}
-
-    
-}
-class Square extends Recatangle{
-    constructor(size){
-        super(size,size)
-    }
-    set width(val){
-        this._width=this._height=val
-    }
-    set height(val){
-        this._width=this._height=val
-
-    }
-}
-// функція буде ламатися 
-let useIt=function (rec) {
-    let width=rec._width
-    rec.height=10
-    console.log(
-        `expected area of ${10*width}
-        got ${rec.area}`
-    );
-
+//interface segregation 
+class Document{
 
 }
 
+class Machine{
+    constructor(){
+        if(this.constructor.name==='Machine'){
+            throw new Error('Machine is abstract')
+        }
+    }
+    print(doc){}
+    fax(doc){}
+    scan(doc){}
+}
+// цікавий підхід по викидуванню помилок 
+class NotImplementedError extends Error{
+    constructor(name){
+        let msg=`${name} is not implemented`
+        super(msg)
+        if(Error.captureStackTrace){
+            Error.captureStackTrace(this,NotImplementedError)
+        }
+    }
+}
+class MultiFunctionPrinter extends Machine{
+    print(doc){}
+    fax(doc){}
+    scan(doc){}
+}
+class OldPrinter extends Machine{
+    // старий принтер ще може видруковувати але не fax і scan 
+    print(doc){}
+    // 
+    fax(doc){
+        // можна нічого не ставити але тут буде проблема 
+        // principle of least surprise тобто люди які юудуть юзати твою прогу можуть здивуватися коли щось піде не так як бажано 
+        // можна щакоментувати але метод викличеться з базового класу 
+    }
+    // інший варіант вирішення проблеми 
+    scan(doc){
+        throw new NotImplementedError('old printer')
+    }
+}
 
-let rec=new Recatangle(2,3)
-useIt(rec)
 
 
-let sq=new Square(5)
-useIt(sq)
+// ISP = треба розділяти 
 
-console.log(sq.toString());
-sq.width=10
-console.log(sq.toString());
-
-
-
-
+class Printer{
+    constructor(){
+        if(this.constructor.name==='Printer'){
+            throw new Error('Printer is abstract')
+        }
+    }
+    print(){}
+}
+class Scanner{
+    constructor(){
+        if(this.constructor.name==='Scanner'){
+            throw new Error('Scanner is abstract')
+        }
+    }
+    scan(){}
+}
+// 
+class Photocopier {
+    print(){}
+    scan(){}
+}
