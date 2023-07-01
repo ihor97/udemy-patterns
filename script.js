@@ -1,70 +1,52 @@
-//interface segregation 
-class Document{
-
-}
-
-class Machine{
-    constructor(){
-        if(this.constructor.name==='Machine'){
-            throw new Error('Machine is abstract')
-        }
-    }
-    print(doc){}
-    fax(doc){}
-    scan(doc){}
-}
-// цікавий підхід по викидуванню помилок 
-class NotImplementedError extends Error{
-    constructor(name){
-        let msg=`${name} is not implemented`
-        super(msg)
-        if(Error.captureStackTrace){
-            Error.captureStackTrace(this,NotImplementedError)
-        }
-    }
-}
-class MultiFunctionPrinter extends Machine{
-    print(doc){}
-    fax(doc){}
-    scan(doc){}
-}
-class OldPrinter extends Machine{
-    // старий принтер ще може видруковувати але не fax і scan 
-    print(doc){}
-    // 
-    fax(doc){
-        // можна нічого не ставити але тут буде проблема 
-        // principle of least surprise тобто люди які юудуть юзати твою прогу можуть здивуватися коли щось піде не так як бажано 
-        // можна щакоментувати але метод викличеться з базового класу 
-    }
-    // інший варіант вирішення проблеми 
-    scan(doc){
-        throw new NotImplementedError('old printer')
-    }
-}
-
-
-
-// ISP = треба розділяти 
-
-class Printer{
-    constructor(){
-        if(this.constructor.name==='Printer'){
-            throw new Error('Printer is abstract')
-        }
-    }
-    print(){}
-}
-class Scanner{
-    constructor(){
-        if(this.constructor.name==='Scanner'){
-            throw new Error('Scanner is abstract')
-        }
-    }
-    scan(){}
-}
+// dependency inversion визначає взаємовідношення між модулями вищого рівня і нижчого 
 // 
-class Photocopier {
-    print(){}
-    scan(){}
+let Relationship=Object.freeze({
+    parent:0,
+    child:1,
+    sibling:2
+})
+
+class Person{
+    constructor(name){
+        this.name=name
+    }
 }
+
+// low level module
+
+class Relationsships{
+    constructor(){
+        this.data=[]
+    }
+    addParentAndChild(parent,child){
+        this.data.push({
+            from:parent,
+            type:Relationship.parent,
+            to:child
+        })
+    }
+}
+
+// high level module
+// high level module має залежати від абстракцій
+class Research{
+    constructor(relationships){
+        // find all children
+        // проблема в тому що ми юзаємо low level data storage
+        // це означає якщо ми щось поміняємо в модулі нижчого рівня треба буде лізти в модуль вищого рівня
+        let relations=relationships.data
+      
+        for (const rel of relations.filter(r=>r.from.name==='john'&&r.type==Relationship.parent)) {
+            console.log(`John has a child named ${rel.to.name}`);
+        }
+    }
+}
+
+let parent = new Person('john')
+let child1 = new Person('chris')
+let child2 = new Person('matt')
+
+let rels=new Relationsships()
+rels.addParentAndChild(parent,child1)
+rels.addParentAndChild(parent,child2)
+new Research(rels)
