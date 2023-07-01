@@ -11,19 +11,12 @@ class Recatangle{
     toString(){
         return `${this._height}*${this._width}`
     }
-    get width(){
-        return this._width
-    }
-    get height(){
-        return this._height
-    }
-    set width(val){
-         this._width=val
-    }
-    set height(val){
-         this._height=val
-    }
-    
+    // можна добавити перевірку
+
+get isSquare(){
+    return this._height===this._width
+}
+
     
 }
 class Square extends Recatangle{
