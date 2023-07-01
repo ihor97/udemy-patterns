@@ -38,9 +38,10 @@ class HtmlBuilder{
         this.root=new Tag(rootname)
         this.rootName=rootname
     }
-    addChild(childName,childText){
+    addChildFluent(childName,childText){
         let child=new Tag(childName,childText)
         this.root.children.push(child)
+        return this;
     }
     toString(){
         return this.root.toString()
@@ -80,10 +81,16 @@ const words=['hello','world']
 // let builder=new HtmlBuilder('ul')
 let builder=Tag.create('ul')
 for (const word of words) {
-    builder.addChild('li',word)
+    builder.addChildFluent('li',word)
 }
 
 console.log(builder.root.toString());
 
 builder.clear()
 
+builder
+    .addChildFluent('li','foo')
+    .addChildFluent('li','bar')
+    .addChildFluent('li','baz')
+
+    console.log(builder.toString());
