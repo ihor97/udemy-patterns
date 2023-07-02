@@ -1,96 +1,88 @@
-// builder використовується для побудови складних об'єктів шляхом крокової конфігурації його складових части
-
-
-class Tag{
-static get indentSize(){return 2}
-
-    constructor(name='',text=''){
-        this.name=name
-        this.text=text
-        this.children=[]
+class Person{
+    constructor(){
+        //adress
+        this.streetAdress=this.postcode=this.city='';
+        // employmentInfo
+        this.companyName=this.position='';
+        this.annualIncome=0
     }
-    toStringimpl(indent){
-        let html =[]
-        let i =' '.repeat(indent*Tag.indentSize)
-        html.push(`${i}<${this.name}>\n`)
-        if(this.text.length>0){
-            html.push(' '.repeat(Tag.indentSize*(indent+1)))
-            html.push(this.text)
-            html.push('\n')
-        }
 
-        for (const child of this.children) {
-            html.push(child.toStringimpl(indent+1))
-        }
-        html.push(`${i}</${this.name}>\n`)
-        return html.join('')
-    }
     toString(){
-        return this.toStringimpl(0)
-    }
-    // створюємо через статичний метод
-    static create(name){
-        return new HtmlBuilder(name)
+        return `person lives at ${this.streetAdress}, ${this.city}, ${this.postcode}
+        and works at ${this.companyName} as a ${this.position} earning ${this.annualIncome}`
     }
 }
-class HtmlBuilder{
-    constructor(rootname){
-        this.root=new Tag(rootname)
-        this.rootName=rootname
+
+
+class PersonBuilder{
+    // вони всі працюють з одним обєктом
+    // решта білдерів теж будуть працювати з тим обєктом
+    constructor(person=new Person()){
+        this.person=person
     }
-    addChildFluent(childName,childText){
-        let child=new Tag(childName,childText)
-        this.root.children.push(child)
+    get lives(){
+
+        return new PersonAdressBuilder(this.person)
+    }
+    get works(){
+        return new PersonJobBuilder(this.person)
+    }
+    build(){
+        return this.person
+    }
+}
+
+
+class PersonJobBuilder extends PersonBuilder{
+    constructor(person){
+        // цей super зберігає силку з батьківського класу
+        super(person)
+    }
+    at(companyName){
+        this.person.companyName=companyName
         return this;
     }
-    toString(){
-        return this.root.toString()
+    asA(position){
+        this.person.position=position
+        return this;
     }
-clear(){
-    this.root=new Tag(this.rootName)
+    earning(annualIncome){
+        this.person.annualIncome=annualIncome
+        return this;
+    }
+
 }
-    build(){
-        return this.root
+
+class PersonAdressBuilder extends PersonBuilder{
+    constructor(person){
+        // цей super зберігає силку з батьківського класу
+        super(person)
+    }
+    at(streetAdress){
+        this.person.streetAdress=streetAdress
+        return this;
+    }
+    withPostCode(postcode){
+        this.person.postcode=postcode
+        return this;
+    }
+    in(city){
+        this.person.city=city
+        return this
     }
 }
 
 
-// const hello='hello'
-// let html=[]
+let pb=new PersonBuilder()
+let person=pb
+    .lives.at('123 london road').in('London').withPostCode('SW12BC')
+    .works.at('Fabrikam').asA('Engineer').earning(123800)
+    .build();
 
-// html.push('<p>')
-// html.push(hello)
-// html.push('/p>')
-
-// console.log(html.join(''));
-
-const words=['hello','world']
-
-// html=[]
-
-// html=[]
-// html.push('<ul>\n')
-// for (const word of words) {
-//     html.push(`    <li>${word}></li>\n`)
-// }
-// html.push('</ul>')
-
-// console.log(html.join(''));
+console.log(person.toString());
 
 
-// let builder=new HtmlBuilder('ul')
-let builder=Tag.create('ul')
-for (const word of words) {
-    builder.addChildFluent('li',word)
-}
 
-console.log(builder.root.toString());
 
-builder.clear()
 
-builder
-    .addChildFluent('li','foo')
-    .addChildFluent('li','bar')
-    .addChildFluent('li','baz')
 
-    console.log(builder.toString());
