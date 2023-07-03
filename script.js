@@ -37,17 +37,28 @@ class Point {
         this.y = y
     }
 
-    static newCartisianPoint(x, y) {
+    // можна зробити гетер
+    static get factory(){
+        return new PointFactory()
+    }
+
+}
+// Factory підтримує singel responsibility принцип
+class PointFactory{
+     newCartisianPoint(x, y) {
         return new Point(x, y)
     }
-    static newPolarpoint(rho, theta) {
+     newPolarpoint(rho, theta) {
         return new Point(rho * Math.cos(theta),
             rho * Math.sin(theta))
     }
 }
 
-let p = Point.newCartisianPoint(4,5)
+
+
+console.log(Point.factory);
+let p = Point.factory.newCartisianPoint(4,5)
 console.log(p);
-let p2=Point.newPolarpoint(5,Math.PI/2)
+let p2=Point.factory.newPolarpoint(5,Math.PI/2)
 console.log(p2);
 
