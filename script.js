@@ -1,64 +1,101 @@
-
-// метод для створення обєктів
-const CoordinatesSystem = {
-    cartesian: 0,
-    polar: 1
-}
-
-class Point {
-    // теж поганий 
-    // constructor(a, b, cs = CoordinatesSystem.cartesian) {
-    //     switch (cs) {
-    //         // тут може бути порушення другого принципу тому що можуть бути різні координати 
-    //         case CoordinatesSystem.cartesian:
-    //             this.x = a;
-    //             this.b = b;
-    //             break
-    //         case CoordinatesSystem.polar:
-    //             this.x = a * Math.cos(b)
-    //             this.y = a * Math.sin(b)
-    //     }
-    // }
+// можна згупувати фабрика
+const readline=require('readline')
+let rl=readline.createInterface({
+    input:process.stdin,
+    output:process.stdout
+})
+class HotDrink {
 
 
-    // поганий варік
-    // constructor(x,y){
-    //     this.x=x
-    //     this.y=y
-    // }
-    // constructor(rho,theta){
-    //     this.x=rho*Math.cos(theta)
-    //     this.y=rho*Math.sin(theta)
-    // }
+    consume() {
 
-
-    constructor(x, y) {
-        this.x = x
-        this.y = y
-    }
-
-    // можна зробити гетер
-    static get factory(){
-        return new PointFactory()
-    }
-
-}
-// Factory підтримує singel responsibility принцип
-class PointFactory{
-     newCartisianPoint(x, y) {
-        return new Point(x, y)
-    }
-     newPolarpoint(rho, theta) {
-        return new Point(rho * Math.cos(theta),
-            rho * Math.sin(theta))
     }
 }
 
+class Tea extends HotDrink {
+    // переписуємо методи
+    consume() {
+        console.log(`this tea is nice with lemon`);
+    }
+}
+
+class Coffe extends HotDrink {
+    consume() {
+        console.log(`this coffe is good`);
+
+    }
+}
+
+class HotDrinkFactory {
+    prepare(amount) {
+        // abstract
+    }
+
+}
+
+class TeaFactory extends HotDrinkFactory {
+    prepare(amount) {
+        console.log(`put in tea bag, boil water pour ${amount}ml`);
+        return new Tea()//customize
+    }
+}
+class CoffeFactory extends HotDrinkFactory {
+    prepare(amount) {
+        console.log(`grind some beans, boil water pour ${amount}ml`);
+        return new Coffe()//customize
+    }
+}
+
+let AvailableDrink=Object.freeze({
+    // це є типи 
+    coffee:CoffeFactory,
+    tea:TeaFactory
+})
+
+class HotDrinkMachine {
+    constructor(){
+        this.factories={}
+        for (const drink in AvailableDrink) {
+            if (Object.hasOwnProperty.call(AvailableDrink, drink)) {
+                // робимо інстанси з перечислення
+                this.factories[drink]=new AvailableDrink[drink]()
+                
+            }
+        }
+    }
+    // правда це порущення open closed principle
+    makeDrink(type) {
+        switch (type) {
+            case 'tea':
+                return new TeaFactory().prepare(200)
+            case 'coffee':
+                return new CoffeFactory().prepare(50)
+            default:
+                throw new Error('')
+        }
+    }
+
+    interact(consumer){
+        rl.question('Please specify drink and amount '+ '(e.g. tea 50): ',answer=>{
+            let parts=answer.split(' ')
+            let name=parts[0]
+            let amount=parseInt(parts[1])
+            let d= this.factories[name].prepare(amount)
+            rl.close()
+            consumer(d)
+        })
+    }
+}
+
+let machine=new HotDrinkMachine();
+
+// rl.question('which drink? ',function (answer) {
+//     let drink=machine.makeDrink(answer)
+//     drink.consume()
+//     rl.close()
+// })
 
 
-console.log(Point.factory);
-let p = Point.factory.newCartisianPoint(4,5)
-console.log(p);
-let p2=Point.factory.newPolarpoint(5,Math.PI/2)
-console.log(p2);
-
+machine.interact(function (drink) {
+    drink.consume()
+})
