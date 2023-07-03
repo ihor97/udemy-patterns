@@ -1,13 +1,13 @@
 
 class Adress{
-    constructor(streetAdress,city,country){
+    constructor(suite,streetAdress,city){
         this.streetAdress=streetAdress
         this.city=city
-        this.country=country
+        this.suite=suite
     }
     toString(){
-        return `adress: ${this.streetAdress}, 
-        ${this.city}, ${this.country}
+        return `Suite: ${this.suite}, 
+        ${this.streetAdress}, ${this.city}
         `
     }
 
@@ -16,22 +16,24 @@ class Adress{
 
 
 
-class Person{
+class Emploee{
     constructor(name,adress){
         this.name=name
         this.adress=adress
     }
     toString(){
-        return `${this.name} lives at ${this.adress}`
+        return `${this.name} works at ${this.adress}`
     }
 
     greet(){
         console.log(`hi my name is ${this.name}
-        I live at ${this.adress.toString()}`
+        I work at ${this.adress.toString()}`
         );
     }
 
 }
+
+
 
 
 class Serializer{
@@ -46,7 +48,7 @@ class Serializer{
         if(idx!==-1){
             obj['typeIndex']= idx
             for (const key in obj) {
-                if (Object.hasOwnProperty.call(obj, key)) {
+                if (Object.hasOwnProperty.call(obj, key)&&obj[key]!=null) {
                     this.markRecursive(obj[key])
                 }
             }
@@ -75,24 +77,31 @@ class Serializer{
         return obj
     }
 }
-// можемо копіювати адресу якщо вона повторюється
-let john=new Person('john',new Adress('123 London road','london','UK'))
 
-// неправильно
-// let jane=john
-// jane.name='Jane'
-// jane.adress.streetAdress='321 Angel str'
+class EmploeeFactory{
+    static _newEmployee(proto,name,suite){
+        let copy = EmploeeFactory.serializer.clone(proto)
+        copy.name=name
+        copy.adress.suite=suite
+        return copy
+    }
 
-// console.log(john.toString());
-// console.log(jane.toString());
+    static newMainOfficeEmployee(name,suite){
+        return this._newEmployee(EmploeeFactory.main, name, suite)
+    }
+    static newAuxOfficeEmployee(name,suite){
+        return this._newEmployee(EmploeeFactory.aux, name, suite)
+    }
+}
 
-// JSON.parse( JSON.stringify(john)) - видаляє звязку до класу
-let s = new Serializer([Person,Adress])
+EmploeeFactory.serializer=new Serializer([Emploee,Adress])
 
+EmploeeFactory.main=new Emploee(null,
+    new Adress(null,'123 East Dr','London'))
+EmploeeFactory.aux=new Emploee(null,
+    new Adress(null,'200 London Rd','Oxford'))
 
-let jane=s.clone(john)
-jane.name='Jane'
-jane.adress.streetAdress='321 Angel str'
-jane.greet()
-console.log(john.toString());
-console.log(jane.toString());
+    let john= EmploeeFactory.newMainOfficeEmployee('john',4321)
+    let jane= EmploeeFactory.newAuxOfficeEmployee('jane',222)
+    console.log(john.toString());
+    console.log(jane.toString());
